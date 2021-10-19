@@ -1,33 +1,72 @@
 package threesumclosest
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
-func sumArray(a []int) int {
-	sum_val := 0
-	for _, i := range a {
-		sum_val += i
+func MinMax(array []int) (int, int) {
+	var max int = array[0]
+	var min int = array[0]
+	for _, value := range array {
+		if max < value {
+			max = value
+		}
+		if min > value {
+			min = value
+		}
 	}
-	return sum_val
+	return min, max
+}
+
+func twoSumSomeExtraStep(nums []int, start int, end int, target_val int, to_be_added int) int {
+	// O(n)L
+	result_val := nums[start] + nums[end] + to_be_added
+	old_start := -999999
+	old_end := -999999
+	for start < end {
+		if start != end {
+
+			temp_sum := nums[start] + nums[end] + to_be_added
+			if temp_sum > target_val {
+				end--
+			} else if temp_sum < target_val {
+				start++
+			}
+			diff_1 := math.Abs(float64(temp_sum) - float64(target_val))
+			diff_2 := math.Abs(float64(result_val) - float64(target_val))
+			if diff_2 > diff_1 {
+				if old_end != nums[end] || old_start != nums[start] {
+					result_val = int(diff_1)
+					old_start = nums[start]
+					old_end = nums[end]
+				}
+
+			}
+		}
+
+	}
+	return result_val
+
 }
 
 func ThreeSumClosest(nums []int, target int) int {
-	// wong answer
-	var divided [][]int
-	for i := 0; i < len(nums); i += 1 {
-		end := i + 3
-		if end > len(nums) {
-			end = len(nums)
-		}
-		if len(nums[i:end]) == 3 {
-			divided = append(divided, nums[i:end])
-		}
+	if len(nums) < 3 {
+		return 0
+	} else if len(nums) == 3 {
+		sum := nums[0] + nums[1] + nums[2]
+		return sum
 	}
-	min_sum := sumArray(divided[0])
-	for _, arr := range divided {
-		temp_sum := sumArray(arr)
-		if math.Abs(float64(target-min_sum)) > math.Abs(float64(target-temp_sum)) {
-			min_sum = temp_sum
-		}
+	sort.Ints(nums) // O(nlogn)
+	len_of_array := len(nums) - 1
+	all_rez := make([]int, 0)
+	for i := 0; i < (len_of_array - 2); i++ {
+		start := i + 1
+		end := len_of_array
+		k := nums[i]
+		rez := twoSumSomeExtraStep(nums, start, end, target, k)
+		all_rez = append(all_rez, rez)
 	}
-	return min_sum
+	min_val, _ := MinMax(all_rez)
+	return min_val
 }
